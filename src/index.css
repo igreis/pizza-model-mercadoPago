@@ -2,39 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Pizzaria Joy Feast Design System
+All colors, gradients, fonts, etc. All colors MUST be HSL.
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Dancing+Script:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pizzaria Brand Colors */
+    --pizza-red: 0 75% 51%;           /* #D32F2F */
+    --pizza-gold: 43 100% 50%;        /* #FFB300 */
+    --pizza-brown: 25 75% 15%;        /* #3E2723 */
+    --pizza-cream: 43 50% 95%;        /* #FFF8E1 */
+    --pizza-orange: 16 100% 66%;      /* #FF5722 */
+    
+    /* Gradients */
+    --gradient-warm: linear-gradient(135deg, hsl(var(--pizza-red)), hsl(var(--pizza-orange)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--pizza-gold)), hsl(43 85% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--pizza-red) / 0.9), hsl(var(--pizza-brown) / 0.8));
+    
+    /* Shadows */
+    --shadow-warm: 0 10px 30px -10px hsl(var(--pizza-red) / 0.3);
+    --shadow-gold: 0 5px 20px -5px hsl(var(--pizza-gold) / 0.4);
+    
+    /* Core Theme Colors */
+    --background: 43 50% 98%;
+    --foreground: 25 75% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 25 75% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 25 75% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 75% 51%;
+    --primary-foreground: 43 50% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 43 100% 50%;
+    --secondary-foreground: 25 75% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 43 30% 90%;
+    --muted-foreground: 25 25% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 16 100% 66%;
+    --accent-foreground: 43 50% 95%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 43 20% 88%;
+    --input: 43 20% 88%;
+    --ring: 0 75% 51%;
 
     --radius: 0.5rem;
 
@@ -101,5 +120,45 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .font-script {
+    font-family: 'Dancing Script', cursive;
+  }
+}
+
+/* Custom Component Styles */
+@layer components {
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+  
+  .warm-gradient {
+    background: var(--gradient-warm);
+  }
+  
+  .gold-gradient {
+    background: var(--gradient-gold);
+  }
+  
+  .shadow-warm {
+    box-shadow: var(--shadow-warm);
+  }
+  
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+  
+  .pizza-card {
+    @apply bg-card rounded-xl p-6 transition-all duration-300 hover:shadow-warm hover:-translate-y-1;
+  }
+  
+  .btn-hero {
+    @apply warm-gradient text-primary-foreground px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 hover:shadow-warm hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply gold-gradient text-secondary-foreground px-6 py-3 rounded-full font-medium transition-all duration-300 hover:shadow-gold hover:scale-105;
   }
 }

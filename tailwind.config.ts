@@ -61,7 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Pizzaria brand colors
+				pizza: {
+					red: 'hsl(var(--pizza-red))',
+					gold: 'hsl(var(--pizza-gold))',
+					brown: 'hsl(var(--pizza-brown))',
+					cream: 'hsl(var(--pizza-cream))',
+					orange: 'hsl(var(--pizza-orange))'
 				}
+			},
+			fontFamily: {
+				sans: ['Poppins', 'sans-serif'],
+				script: ['Dancing Script', 'cursive']
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

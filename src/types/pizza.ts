@@ -1,0 +1,25 @@
+export interface Pizza {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: 'tradicional' | 'especial' | 'doce' | 'vegetariana';
+  ingredients: string[];
+  popular?: boolean;
+}
+
+export interface CartItem extends Pizza {
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  items: CartItem[];
+  total: number;
+  status: 'pendente' | 'em_preparo' | 'enviado' | 'entregue';
+  createdAt: Date;
+}
