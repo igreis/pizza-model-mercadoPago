@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, X, ShoppingCart } from 'lucide-react';
 import { CartItem } from '@/types/pizza';
+import { CheckoutForm } from '@/components/CheckoutForm';
 
 interface CartProps {
   items: CartItem[];
@@ -14,6 +15,7 @@ interface CartProps {
 
 export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: CartProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -28,6 +30,35 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
         <ShoppingCart className="w-5 h-5 mr-2" />
         Ver Carrinho ({itemCount})
       </Button>
+    );
+  }
+
+  const handleCheckoutSuccess = () => {
+    // Clear all items from cart
+    items.forEach(item => onRemoveItem(item.id));
+    setShowCheckout(false);
+    setIsOpen(false);
+  };
+
+  if (showCheckout) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowCheckout(false)}
+            className="absolute -top-2 -right-2 z-10"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+          <CheckoutForm 
+            items={items}
+            total={total}
+            onSuccess={handleCheckoutSuccess}
+          />
+        </div>
+      </div>
     );
   }
 
@@ -120,7 +151,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
             </div>
             
             <Button
-              onClick={onCheckout}
+              onClick={() => setShowCheckout(true)}
               className="w-full btn-hero"
               size="lg"
             >

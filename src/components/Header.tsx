@@ -16,6 +16,7 @@ export const Header = ({ cartItemsCount = 0, onCartClick }: HeaderProps) => {
     { name: 'Cardápio', href: '#menu' },
     { name: 'Sobre', href: '#about' },
     { name: 'Contato', href: '#contact' },
+    { name: 'Admin', href: '/admin' },
   ];
 
   return (
