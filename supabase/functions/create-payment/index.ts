@@ -41,6 +41,10 @@ serve(async (req) => {
     const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     console.log("[CREATE-PAYMENT] Total calculated", { total });
 
+    // Get origin with fallback
+    const origin = req.headers.get("origin") || "https://id-preview--08908c84-8b6a-46e4-9f79-e1ed8063cb47.lovable.app";
+    console.log("[CREATE-PAYMENT] Using origin", { origin });
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer_email: customerInfo.email,
@@ -57,8 +61,8 @@ serve(async (req) => {
         quantity: item.quantity,
       })),
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/`,
       metadata: {
         customer_name: customerInfo.name,
         customer_phone: customerInfo.phone,
