@@ -1,10 +1,10 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, X, ShoppingCart } from 'lucide-react';
 import { CartItem } from '@/types/pizza';
-import { CheckoutForm } from '@/components/CheckoutForm';
 
 interface CartProps {
   items: CartItem[];
@@ -15,7 +15,6 @@ interface CartProps {
 
 export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: CartProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -33,34 +32,9 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
     );
   }
 
-  const handleCheckoutSuccess = () => {
-    // Clear all items from cart
-    items.forEach(item => onRemoveItem(item.id));
-    setShowCheckout(false);
-    setIsOpen(false);
+  const handleCheckoutClick = () => {
+    onCheckout();
   };
-
-  if (showCheckout) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCheckout(false)}
-            className="absolute -top-2 -right-2 z-10"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-          <CheckoutForm 
-            items={items}
-            total={total}
-            onSuccess={handleCheckoutSuccess}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -87,9 +61,11 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex items-center space-x-4 bg-muted/50 rounded-lg p-4">
-                <img
+                <Image
                   src={item.image}
                   alt={item.name}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 object-cover rounded-lg"
                 />
                 
@@ -105,7 +81,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
                   </Badge>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center ">
                   <Button
                     variant="outline"
                     size="sm"
@@ -133,7 +109,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemoveItem(item.id)}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive p-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -151,7 +127,7 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
             </div>
             
             <Button
-              onClick={() => setShowCheckout(true)}
+              onClick={handleCheckoutClick}
               className="w-full btn-hero"
               size="lg"
             >

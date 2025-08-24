@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import pizzaLogo from '@/assets/pizza-logo.png';
 import { Instagram, Facebook, Twitter, Heart } from 'lucide-react';
 
@@ -11,7 +12,7 @@ export const Footer = () => {
           {/* Logo and Description */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <img src={pizzaLogo} alt="Pizza Joy Feast" className="h-10 w-10" />
+              <Image src={pizzaLogo} alt="Pizza Joy Feast" width={40} height={40} className="h-10 w-10" />
               <div>
                 <h3 className="text-xl font-bold">Pizza Joy Feast</h3>
                 <p className="text-sm opacity-80 font-script">Sabor que alegra</p>

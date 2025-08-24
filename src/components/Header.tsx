@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import pizzaLogo from '@/assets/pizza-logo.png';
@@ -25,7 +26,7 @@ export const Header = ({ cartItemsCount = 0, onCartClick }: HeaderProps) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img src={pizzaLogo} alt="Pizza Joy Feast" className="h-10 w-10" />
+            <Image src={pizzaLogo} alt="Pizza Joy Feast" width={40} height={40} className="h-10 w-10" priority />
             <div>
               <h1 className="text-xl font-bold text-primary">Pizza Joy Feast</h1>
               <p className="text-xs text-muted-foreground font-script">Sabor que alegra</p>

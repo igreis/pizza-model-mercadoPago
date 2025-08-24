@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Star } from 'lucide-react';
 import { Pizza } from '@/types/pizza';
+import Image from 'next/image';
 
 interface PizzaCardProps {
   pizza: Pizza;
@@ -26,11 +27,14 @@ export const PizzaCard = ({ pizza, onAddToCart }: PizzaCardProps) => {
   return (
     <div className="pizza-card group">
       {/* Image Container */}
-      <div className="relative overflow-hidden rounded-lg mb-4">
-        <img 
-          src={pizza.image} 
+      <div className="relative overflow-hidden rounded-lg mb-4 h-48">
+        <Image 
+          src={pizza.image}
           alt={pizza.name}
-          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={pizza.popular}
         />
         
         {/* Popular Badge */}

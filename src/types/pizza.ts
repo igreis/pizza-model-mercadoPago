@@ -1,9 +1,11 @@
+import type { StaticImageData } from 'next/image'
+
 export interface Pizza {
   id: string;
   name: string;
   description: string;
   price: number;
-  image: string;
+  image: string | StaticImageData;
   category: 'tradicional' | 'especial' | 'doce' | 'vegetariana';
   ingredients: string[];
   popular?: boolean;

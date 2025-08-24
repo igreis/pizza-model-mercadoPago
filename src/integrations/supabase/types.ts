@@ -23,7 +23,6 @@ export type Database = {
           id: string
           items: Json
           status: string
-          stripe_session_id: string | null
           total: number
           updated_at: string
         }
@@ -35,7 +34,6 @@ export type Database = {
           id?: string
           items: Json
           status?: string
-          stripe_session_id?: string | null
           total: number
           updated_at?: string
         }
@@ -47,7 +45,6 @@ export type Database = {
           id?: string
           items?: Json
           status?: string
-          stripe_session_id?: string | null
           total?: number
           updated_at?: string
         }

@@ -1,14 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Star } from 'lucide-react';
+import Image from 'next/image';
 import heroBackground from '@/assets/hero-background.jpg';
 
 export const Hero = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBackground})` }}
+      <Image
+        src={heroBackground}
+        alt=""
+        fill
+        priority
+        className="object-cover object-center"
       />
       
       {/* Overlay */}
