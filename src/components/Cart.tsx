@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, X, ShoppingCart } from 'lucide-react';
 import { CartItem } from '@/types/pizza';
+import useMercadoPago from '@/hooks/useMercadoPago';
 
 interface CartProps {
   items: CartItem[];
@@ -14,6 +15,7 @@ interface CartProps {
 }
 
 export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: CartProps) => {
+  const { createMercadoPagoCheckout } = useMercadoPago();
   const [isOpen, setIsOpen] = useState(false);
 
   const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -32,8 +34,21 @@ export const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: Cart
     );
   }
 
-  const handleCheckoutClick = () => {
-    onCheckout();
+  const handleCheckoutClick = async () => {
+    const checkoutData = {
+      items: items.map((item) => ({
+        id: item.id,
+        title: item.name,
+        description: item.category,
+        picture_url: item.image,
+        quantity: item.quantity,
+        unit_price: item.price,
+        currency_id: "BRL",
+      })),
+      userEmail: "cliente@email.com", // depois pode puxar do seu contexto de usuário
+    };
+  
+    await createMercadoPagoCheckout(checkoutData);
   };
 
   return (
