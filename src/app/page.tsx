@@ -9,6 +9,7 @@ import { Cart } from '@/components/Cart';
 import { Footer } from '@/components/Footer';
 import { Pizza, CartItem } from '@/types/pizza';
 import { useToast } from '@/hooks/use-toast';
+import useMercadoPago from '@/hooks/useMercadoPago';
 
 export default function HomePage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -27,10 +28,10 @@ export default function HomePage() {
       return [...prev, { ...pizza, quantity: 1 }];
     });
 
-    toast({
-      title: "Pizza adicionada!",
-      description: `${pizza.name} foi adicionada ao seu carrinho.`,
-    });
+   // toast({
+   //   title: "Pizza adicionada!",
+   //   description: `${pizza.name} foi adicionada ao seu carrinho.`,
+   // });
   };
 
   const updateQuantity = (id: string, quantity: number) => {
@@ -62,18 +63,37 @@ export default function HomePage() {
 
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+const { createMercadoPagoCheckout } = useMercadoPago();
+
+  const handleCheckoutClick = async ( items: CartItem[]) => {
+    const checkoutData = {
+        items: items.map((item) => ({
+            id: item.id,
+            title: item.name,
+            description: item.category,
+            picture_url: item.image,
+            quantity: item.quantity,
+            unit_price: item.price,
+            currency_id: "BRL",
+        })),
+        userEmail: "cliente@email.com", // depois pode puxar do seu contexto de usuário
+    };
+
+    await createMercadoPagoCheckout(checkoutData);
+};
+
   return (
     <div className="min-h-screen bg-background">
       <Header cartItemsCount={cartItemsCount} />
       <Hero />
-      <MenuSection onAddToCart={addToCart} />
+      <MenuSection onAddToCart={addToCart} items={cartItems} handleCheckoutClick={() => handleCheckoutClick(cartItems)}/>
       <About />
       <Contact />
       <Cart
         items={cartItems}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
-        onCheckout={handleCheckout}
+        handleCheckoutClick={() => handleCheckoutClick(cartItems)}
       />
       <Footer />
     </div>

@@ -11,6 +11,7 @@ const useMercadoPago = () => {
 
   async function createMercadoPagoCheckout(checkoutData: any) {
     try {
+      
       const response = await fetch("/api/mercado-pago/create-checkout", {
         method: "POST",
         headers: {
@@ -19,11 +20,31 @@ const useMercadoPago = () => {
         body: JSON.stringify(checkoutData),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        let serverMessage = "";
+        try {
+          const maybeJson = await response.json();
+          serverMessage = maybeJson?.error || JSON.stringify(maybeJson);
+        } catch (jsonError) {
+          try {
+            serverMessage = await response.text();
+          } catch (textError) {
+            serverMessage = `Erro ${response.status}`;
+          }
+        }
+        
+        throw new Error(serverMessage || `Falha ao criar checkout (status ${response.status})`);
+      }
 
-      router.push(data.initPoint);
+      const data = await response.json();
+      
+      if (data?.initPoint) {
+        router.push(data.initPoint);
+      } else {
+        throw new Error("Resposta sem initPoint do Mercado Pago");
+      }
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 

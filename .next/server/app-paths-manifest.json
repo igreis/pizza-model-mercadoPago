@@ -1,4 +1,4 @@
 {
   "/page": "app/page.js",
-  "/api/mercado-pago/create-checkout/route": "app/api/mercado-pago/create-checkout/route.js"
+  "/_not-found/page": "app/_not-found/page.js"
 }

@@ -3,9 +3,12 @@ import { Button } from '@/components/ui/button';
 import { PizzaCard } from './PizzaCard';
 import { pizzas } from '@/data/pizzas';
 import { Pizza } from '@/types/pizza';
+import { CartItem } from '@/types/pizza';
 
 interface MenuSectionProps {
   onAddToCart: (pizza: Pizza) => void;
+  items: CartItem[];
+  handleCheckoutClick: (items: CartItem[]) => Promise<void>;
 }
 
 const categories = [
@@ -16,8 +19,9 @@ const categories = [
   { id: 'doce', label: 'Doces' }
 ];
 
-export const MenuSection = ({ onAddToCart }: MenuSectionProps) => {
+export const MenuSection = ({ onAddToCart, items, handleCheckoutClick }: MenuSectionProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
+  console.log(items);
 
   const filteredPizzas = activeCategory === 'all' 
     ? pizzas 
@@ -61,6 +65,8 @@ export const MenuSection = ({ onAddToCart }: MenuSectionProps) => {
               key={pizza.id} 
               pizza={pizza} 
               onAddToCart={onAddToCart}
+              items={items}
+              handleCheckoutClick={() => handleCheckoutClick(items)}
             />
           ))}
         </div>
