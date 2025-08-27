@@ -4,7 +4,9 @@ export interface Pizza {
   id: string;
   name: string;
   description: string;
-  price: number;
+  priceG: number;
+  priceM: number;
+  priceP: number;
   image: string | StaticImageData;
   category: 'tradicional' | 'especial' | 'doce' | 'vegetariana';
   ingredients: string[];

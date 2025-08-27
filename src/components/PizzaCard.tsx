@@ -1,13 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Star } from 'lucide-react';
-import { Pizza } from '@/types/pizza';
+import { Pizza, CartItem } from '@/types/pizza';
 import Image from 'next/image';
 import { useState } from 'react';
 import { PizzaCustomizationModal, PizzaCustomization } from './modalPizzaCustomization';
 import { DeliveryInfoModal, DeliveryInfo } from './modalEntrega';
 import { OrderSummaryModal } from './modalInfos';
-import { CartItem } from '@/types/pizza';
 
 interface PizzaCardProps {
   pizza: Pizza;
@@ -20,6 +19,8 @@ export const PizzaCard = ({ pizza, onAddToCart, items, handleCheckoutClick }: Pi
   const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
+
+  console.log(pizza)
   
   const [customization, setCustomization] = useState<PizzaCustomization>({
     size: 'M',
@@ -152,27 +153,10 @@ export const PizzaCard = ({ pizza, onAddToCart, items, handleCheckoutClick }: Pi
             </p>
           </div>
 
-          {/* Ingredients */}
-          <div className="flex flex-wrap gap-1">
-            {pizza.ingredients.slice(0, 3).map((ingredient, index) => (
-              <span 
-                key={index}
-                className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full"
-              >
-                {ingredient}
-              </span>
-            ))}
-            {pizza.ingredients.length > 3 && (
-              <span className="text-xs text-muted-foreground px-2 py-1">
-                +{pizza.ingredients.length - 3} mais
-              </span>
-            )}
-          </div>
-
           {/* Price and Order Button */}
           <div className="flex items-center justify-between pt-2">
             <div className="text-2xl font-bold text-primary">
-              A partir de R$ {pizza.price.toFixed(2)}
+              A partir de R$ {pizza.priceG.toFixed(2)}
             </div>
             
             <Button 
@@ -211,7 +195,7 @@ export const PizzaCard = ({ pizza, onAddToCart, items, handleCheckoutClick }: Pi
         isOpen={showSummaryModal}
         onClose={handleCloseModals}
         onBack={handleBackToDelivery}
-        pizza={pizza}
+        items={items}
         customization={customization}
         deliveryInfo={deliveryInfo}
         onConfirmOrder={() => handleCheckoutClick(items)}

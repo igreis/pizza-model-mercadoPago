@@ -12,10 +12,11 @@ import { useToast } from '@/hooks/use-toast';
 import useMercadoPago from '@/hooks/useMercadoPago';
 
 export default function HomePage() {
+  
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
 
-  const addToCart = (pizza: Pizza) => {
+  const addToCart = (pizza: CartItem) => {
     setCartItems(prev => {
       const existingItem = prev.find(item => item.id === pizza.id);
       if (existingItem) {
@@ -54,13 +55,6 @@ export default function HomePage() {
     });
   };
 
-  const handleCheckout = () => {
-    toast({
-      title: "Pagamento não configurado",
-      description: "Integre manualmente um provedor de pagamento (ex.: Mercado Pago, Stripe, etc.) antes de habilitar o checkout.",
-    });
-  };
-
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
 const { createMercadoPagoCheckout } = useMercadoPago();
@@ -73,14 +67,16 @@ const { createMercadoPagoCheckout } = useMercadoPago();
             description: item.category,
             picture_url: item.image,
             quantity: item.quantity,
-            unit_price: item.price,
+            unit_price: item.priceG,
             currency_id: "BRL",
         })),
         userEmail: "cliente@email.com", // depois pode puxar do seu contexto de usuário
     };
 
     await createMercadoPagoCheckout(checkoutData);
-};
+  };
+  console.log("cartItems", cartItems)
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,7 +85,7 @@ const { createMercadoPagoCheckout } = useMercadoPago();
       <MenuSection onAddToCart={addToCart} items={cartItems} handleCheckoutClick={() => handleCheckoutClick(cartItems)}/>
       <About />
       <Contact />
-      <Cart
+      <Cart   
         items={cartItems}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}

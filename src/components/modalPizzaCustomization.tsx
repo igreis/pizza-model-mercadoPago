@@ -44,12 +44,6 @@ export const PizzaCustomizationModal = ({
     chocolate: 8
   };
 
-  const calculatePrice = () => {
-    const basePrice = pizza.price * sizeMultiplier[customization.size];
-    const borderPrice = borderPrices[customization.border];
-    return basePrice + borderPrice;
-  };
-
   const updateCustomization = (updates: Partial<PizzaCustomization>) => {
     onCustomizationChange({ ...customization, ...updates });
   };
@@ -82,15 +76,15 @@ export const PizzaCustomizationModal = ({
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="P" id="size-p" />
-                <Label htmlFor="size-p">Pequena (P) - R$ {(pizza.price * 0.8).toFixed(2)}</Label>
+                <Label htmlFor="size-p">Pequena (P) - R$ {pizza.priceP}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="M" id="size-m" />
-                <Label htmlFor="size-m">Média (M) - R$ {pizza.price.toFixed(2)}</Label>
+                <Label htmlFor="size-m">Média (M) - R$ {pizza.priceM}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="G" id="size-g" />
-                <Label htmlFor="size-g">Grande (G) - R$ {(pizza.price * 1.3).toFixed(2)}</Label>
+                <Label htmlFor="size-g">Grande (G) - R$ {pizza.priceG}</Label>
               </div>
             </RadioGroup>
           </div>
@@ -143,7 +137,7 @@ export const PizzaCustomizationModal = ({
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total:</span>
-              <span className="text-primary">R$ {calculatePrice().toFixed(2)}</span>
+              <span className="text-primary">R$ {customization.size === 'P' ? pizza.priceP : customization.size === 'M' ? pizza.priceM : pizza.priceG}</span>
             </div>
           </div>
 

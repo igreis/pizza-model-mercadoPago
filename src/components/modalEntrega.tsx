@@ -5,6 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CreditCard, ArrowLeft } from 'lucide-react';
 import { verifyCep } from '@/hooks/visCep';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export interface DeliveryInfo {
     type: 'entrega' | 'retirada';
@@ -38,43 +42,86 @@ export const DeliveryInfoModal = ({
     onBack,
     handleGoToSummary
 }: DeliveryInfoModalProps) => {
-    const updateDeliveryInfo = (updates: Partial<DeliveryInfo>) => {
-        onDeliveryInfoChange({ ...deliveryInfo, ...updates });
-    };
+    const addressSchema = z.object({
+        street: z.string().min(1, 'Informe a rua'),
+        number: z.string().min(1, 'Informe o número'),
+        neighborhood: z.string().min(1, 'Informe o bairro'),
+        complement: z.string().optional().default(''),
+        city: z.string().min(1, 'Informe a cidade'),
+        zipCode: z.string().min(8, 'Informe o CEP')
+    });
 
-    const updateAddress = (updates: Partial<DeliveryInfo['address']>) => {
-        onDeliveryInfoChange({
-            ...deliveryInfo,
-            address: { ...deliveryInfo.address, ...updates } as DeliveryInfo['address']
-        });
-    };
-
-    const isFormValid = () => {
-        const basicInfo = deliveryInfo.name && deliveryInfo.phone && deliveryInfo.email;
-        if (deliveryInfo.type === 'retirada') {
-            return basicInfo;
-        }
-        return basicInfo &&
-            deliveryInfo.address?.street &&
-            deliveryInfo.address?.number &&
-            deliveryInfo.address?.neighborhood &&
-            deliveryInfo.address?.city &&
-            deliveryInfo.address?.zipCode;
-    };
-
-    const handleChangeCep = async (cep: string) => {
-        
-        try {
-            if (!cep || cep.length !== 8) {
-                throw new Error('CEP inválido');
+    const formSchema = z.object({
+        type: z.enum(['entrega', 'retirada']),
+        name: z.string().min(1, 'Informe seu nome'),
+        phone: z.string().min(8, 'Informe um telefone'),
+        email: z.string().email('Email inválido'),
+        address: addressSchema.optional()
+    }).superRefine((data, ctx) => {
+        if (data.type === 'entrega') {
+            if (!data.address) {
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Preencha o endereço completo', path: ['address'] });
+                return;
             }
-            const response = await verifyCep(cep);
-            updateAddress({ zipCode: response.cep });
-            updateAddress({ street: response.logradouro });
-            updateAddress({ neighborhood: response.bairro });
-            updateAddress({ city: response.cidade });
-            console.log("deliveryInfo", deliveryInfo);
+            // ensure all required fields are present
+            const required = ['street', 'number', 'neighborhood', 'city', 'zipCode'] as const;
+            for (const key of required) {
+                if (!data.address[key] || String(data.address[key]).trim().length === 0) {
+                    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Campo obrigatório', path: ['address', key] });
+                }
+            }
+        }
+    });
+
+    const defaultAddress = {
+        street: '',
+        number: '',
+        neighborhood: '',
+        complement: '',
+        city: '',
+        zipCode: ''
+    };
+
+    const {
+        control,
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        reset,
+        formState: { errors, isValid }
+    } = useForm<DeliveryInfo>({
+        resolver: zodResolver(formSchema) as any,
+        mode: 'onChange',
+        defaultValues: {
+            ...deliveryInfo,
+            address: deliveryInfo.address ?? defaultAddress
+        }
+    });
+
+    useEffect(() => {
+        reset({
+            ...deliveryInfo,
+            address: deliveryInfo.address ?? defaultAddress
+        });
+    }, [deliveryInfo, reset]);
+
+    const onSubmit = (data: DeliveryInfo) => {
+        onDeliveryInfoChange(data);
+        handleGoToSummary();
+    };
+
+    const handleCepLookup = async (cep: string) => {
+        try {
+            const clean = cep.replace(/\D/g, '');
+            if (!clean || clean.length !== 8) return; // aguarda 8 dígitos
+            const response = await verifyCep(clean);
+            setValue('address.zipCode', response.cep, { shouldValidate: true });
+            setValue('address.street', response.logradouro, { shouldValidate: true });
+            setValue('address.neighborhood', response.bairro, { shouldValidate: true });
+            setValue('address.city', response.cidade, { shouldValidate: true });
         } catch (error) {
+            // falha silenciosa; usuário pode editar manualmente
             console.error(error);
         }
     };
@@ -93,125 +140,94 @@ export const DeliveryInfoModal = ({
                     </Button>
                     <DialogTitle className="text-center">Informações de Entrega</DialogTitle>
                 </DialogHeader>
-
-                <div className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     {/* Delivery Type */}
                     <div>
                         <Label className="text-base font-semibold">Tipo de Pedido</Label>
-                        <RadioGroup
-                            value={deliveryInfo.type}
-                            onValueChange={(value: 'entrega' | 'retirada') =>
-                                updateDeliveryInfo({ type: value })
-                            }
-                            className="mt-2"
-                        >
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="retirada" id="type-retirada" />
-                                <Label htmlFor="type-retirada">Retirar no local</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="entrega" id="type-entrega" />
-                                <Label htmlFor="type-entrega">Entrega em casa</Label>
-                            </div>
-                        </RadioGroup>
+                        <Controller
+                            control={control}
+                            name="type"
+                            render={({ field }) => (
+                                <RadioGroup value={field.value} onValueChange={field.onChange} className="mt-2">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="retirada" id="type-retirada" />
+                                        <Label htmlFor="type-retirada">Retirar no local</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="entrega" id="type-entrega" />
+                                        <Label htmlFor="type-entrega">Entrega em casa</Label>
+                                    </div>
+                                </RadioGroup>
+                            )}
+                        />
                     </div>
 
                     {/* Personal Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="name">Nome completo</Label>
-                            <Input
-                                id="name"
-                                value={deliveryInfo.name}
-                                onChange={(e) => updateDeliveryInfo({ name: e.target.value })}
-                                placeholder="Seu nome completo"
-                            />
+                            <Input id="name" placeholder="Seu nome completo" {...register('name')} />
+                            {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message as string}</p>}
                         </div>
                         <div>
                             <Label htmlFor="phone">Telefone</Label>
-                            <Input
-                                id="phone"
-                                value={deliveryInfo.phone}
-                                onChange={(e) => updateDeliveryInfo({ phone: e.target.value })}
-                                placeholder="(11) 99999-9999"
-                            />
+                            <Input id="phone" placeholder="(11) 99999-9999" {...register('phone')} />
+                            {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone.message as string}</p>}
                         </div>
                         <div className="md:col-span-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                value={deliveryInfo.email}
-                                onChange={(e) => updateDeliveryInfo({ email: e.target.value })}
-                                placeholder="seu@email.com"
-                            />
+                            <Input id="email" type="email" placeholder="seu@email.com" {...register('email')} />
+                            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message as string}</p>}
                         </div>
                     </div>
 
                     {/* Address (only for delivery) */}
-                    {deliveryInfo.type === 'entrega' && (
+                    {watch('type') === 'entrega' && (
                         <div className="space-y-4">
                             <h4 className="font-semibold">Endereço de Entrega</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <Label htmlFor="zipCode">CEP</Label>
+                                    <Input
+                                        id="zipCode"
+                                        placeholder="00000-000"
+                                        {...register('address.zipCode', {
+                                            onBlur: (e) => handleCepLookup(e.target.value)
+                                        })}
+                                    />
+                                    {errors.address?.zipCode && <p className="text-sm text-red-500 mt-1">{errors.address.zipCode.message as string}</p>}
+                                </div>
                                 <div className="md:col-span-2">
                                     <Label htmlFor="street">Rua</Label>
-                                    <Input
-                                        id="street"
-                                        value={deliveryInfo.address?.street || ''}
-                                        onChange={(e) => updateAddress({ street: e.target.value })}
-                                        placeholder="Nome da rua"
-                                    />
+                                    <Input id="street" placeholder="Nome da rua" disabled={true} {...register('address.street')} />
+                                    {errors.address?.street && <p className="text-sm text-red-500 mt-1">{errors.address.street.message as string}</p>}
                                 </div>
-                                <div>
-                                    <Label htmlFor="number">Número</Label>
-                                    <Input
-                                        id="number"
-                                        value={deliveryInfo.address?.number || ''}
-                                        onChange={(e) => updateAddress({ number: e.target.value })}
-                                        placeholder="123"
-                                    />
-                                </div>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label htmlFor="neighborhood">Bairro</Label>
-                                    <Input
-                                        id="neighborhood"
-                                        value={deliveryInfo.address?.neighborhood || ''}
-                                        onChange={(e) => updateAddress({ neighborhood: e.target.value })}
-                                        placeholder="Nome do bairro"
-                                    />
+                                    <Label htmlFor="number">Número</Label>
+                                    <Input id="number" placeholder="123" {...register('address.number')} />
+                                    {errors.address?.number && <p className="text-sm text-red-500 mt-1">{errors.address.number.message as string}</p>}
                                 </div>
+
                                 <div>
                                     <Label htmlFor="complement">Complemento</Label>
-                                    <Input
-                                        id="complement"
-                                        value={deliveryInfo.address?.complement || ''}
-                                        onChange={(e) => updateAddress({ complement: e.target.value })}
-                                        placeholder="Apto, bloco, etc. (opcional)"
-                                    />
+                                    <Input id="complement" placeholder="Apto, bloco, etc. (opcional)" {...register('address.complement')} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="city">Cidade</Label>
-                                    <Input
-                                        id="city"
-                                        value={deliveryInfo.address?.city || ''} 
-                                        onChange={(e) => updateAddress({ city: e.target.value })}
-                                        placeholder="Nome da cidade"
-                                    />
+                                    <Input id="city" placeholder="Nome da cidade" disabled={true} {...register('address.city')} />
+                                    {errors.address?.city && <p className="text-sm text-red-500 mt-1">{errors.address.city.message as string}</p>}
                                 </div>
                                 <div>
-                                    <Label htmlFor="zipCode">CEP</Label>
-                                    <Input
-                                        id="zipCode"
-                                        value={deliveryInfo.address?.zipCode}
-                                        onChange={(e) => handleChangeCep(e.target.value)}
-                                        placeholder="00000-000"
-                                    />
+                                    <Label htmlFor="neighborhood">Bairro</Label>
+                                    <Input id="neighborhood" placeholder="Nome do bairro" disabled={true} {...register('address.neighborhood')} />
+                                    {errors.address?.neighborhood && <p className="text-sm text-red-500 mt-1">{errors.address.neighborhood.message as string}</p>}
                                 </div>
                             </div>
                         </div>
@@ -219,17 +235,12 @@ export const DeliveryInfoModal = ({
 
                     {/* Action Button */}
                     <div className="pt-2">
-                        <Button
-                            onClick={handleGoToSummary}
-                            disabled={!isFormValid()}
-                            className="w-full"
-                            size="lg"
-                        >
+                        <Button type="submit" disabled={!isValid} className="w-full" size="lg">
                             <CreditCard className="w-4 h-4 mr-2" />
                             Finalizar Pedido
                         </Button>
                     </div>
-                </div>
+                </form>
             </DialogContent>
         </Dialog>
     );

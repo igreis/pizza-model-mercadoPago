@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PizzaCard } from './PizzaCard';
 import { pizzas } from '@/data/pizzas';
-import { Pizza } from '@/types/pizza';
-import { CartItem } from '@/types/pizza';
+import { CartItem, Pizza } from '@/types/pizza';
+import { PizzaCustomization } from './modalPizzaCustomization';
 
 interface MenuSectionProps {
-  onAddToCart: (pizza: Pizza) => void;
+  onAddToCart: (pizza: Pizza, customizations: PizzaCustomization) => void;
   items: CartItem[];
   handleCheckoutClick: (items: CartItem[]) => Promise<void>;
 }
@@ -21,11 +21,12 @@ const categories = [
 
 export const MenuSection = ({ onAddToCart, items, handleCheckoutClick }: MenuSectionProps) => {
   const [activeCategory, setActiveCategory] = useState('all');
-  console.log(items);
 
   const filteredPizzas = activeCategory === 'all' 
     ? pizzas 
     : pizzas.filter(pizza => pizza.category === activeCategory);
+
+  console.log("items", items);
 
   return (
     <section id="menu" className="py-20 bg-muted/30">

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, X, ShoppingCart } from 'lucide-react';
 import { CartItem } from '@/types/pizza';
+import { PizzaCustomizationModal, PizzaCustomization } from './modalPizzaCustomization';
 
 interface CartProps {
   items: CartItem[];

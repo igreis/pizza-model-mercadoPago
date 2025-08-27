@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, MapPin, User, Phone, Mail, Clock, CreditCard } from 'lucide-react';
-import { Pizza } from '@/types/pizza';
+import { CartItem } from '@/types/pizza';
 import { PizzaCustomization } from './modalPizzaCustomization';
 import { DeliveryInfo } from './modalEntrega';
 import Image from 'next/image';
@@ -12,7 +12,7 @@ interface OrderSummaryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBack: () => void;
-  pizza: Pizza;
+  items: CartItem[];
   customization: PizzaCustomization;
   deliveryInfo: DeliveryInfo;
   onConfirmOrder: () => void;
@@ -22,7 +22,7 @@ export const OrderSummaryModal = ({
   isOpen,
   onClose,
   onBack,
-  pizza,
+  items,
   customization,
   deliveryInfo,
   onConfirmOrder
@@ -33,6 +33,7 @@ export const OrderSummaryModal = ({
     G: 'Grande'
   };
 
+  console.log("pizzasModalInfo", items)
   const borderLabels = {
     tradicional: 'Tradicional',
     catupiry: 'Catupiry',
@@ -53,15 +54,9 @@ export const OrderSummaryModal = ({
     chocolate: 8
   };
 
-  const calculateItemPrice = () => {
-    const basePrice = pizza.price * sizeMultiplier[customization.size];
-    const borderPrice = borderPrices[customization.border];
-    return basePrice + borderPrice;
-  };
-
   const deliveryFee = deliveryInfo.type === 'entrega' ? 8.50 : 0;
-  const itemPrice = calculateItemPrice();
-  const totalPrice = itemPrice + deliveryFee;
+  const subtotal = items.reduce((sum, item) => sum + item.priceG * item.quantity, 0);
+  const totalPrice = subtotal + deliveryFee;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -79,35 +74,46 @@ export const OrderSummaryModal = ({
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Pizza Info */}
-          <div className="flex gap-4 p-4 bg-muted/50 rounded-lg">
-            <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-              <Image 
-                src={pizza.image}
-                alt={pizza.name}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg truncate">{pizza.name}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {pizza.description}
-              </p>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {pizza.ingredients.slice(0, 2).map((ingredient, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {ingredient}
-                  </Badge>
-                ))}
-                {pizza.ingredients.length > 2 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{pizza.ingredients.length - 2}
-                  </Badge>
-                )}
+          {/* Cart Items */}
+          <div className="space-y-3">
+            {items.map((item) => (
+              <div key={item.id} className="flex gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                  <Image 
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-lg truncate">{item.name}</h3>
+                    <span className="text-sm text-muted-foreground">Qtd: {item.quantity}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {item.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {item.ingredients.slice(0, 2).map((ingredient, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {ingredient}
+                      </Badge>
+                    ))}
+                    {item.ingredients.length > 2 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{item.ingredients.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-2 text-sm">
+                    <span className="font-medium">Preço:</span> R$ {item.priceG.toFixed(2)}
+                    <span className="ml-3 font-medium">Total:</span> R$ {(item.priceG * item.quantity).toFixed(2)}
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
 
           {/* Customizations */}
@@ -213,17 +219,9 @@ export const OrderSummaryModal = ({
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>{pizza.name} ({sizeLabels[customization.size]})</span>
-                <span>R$ {(pizza.price * sizeMultiplier[customization.size]).toFixed(2)}</span>
+                <span>Subtotal</span>
+                <span>R$ {subtotal.toFixed(2)}</span>
               </div>
-              
-              {borderPrices[customization.border] > 0 && (
-                <div className="flex justify-between">
-                  <span>Borda {borderLabels[customization.border]}</span>
-                  <span>R$ {borderPrices[customization.border].toFixed(2)}</span>
-                </div>
-              )}
-              
               {deliveryInfo.type === 'entrega' && (
                 <div className="flex justify-between">
                   <span>Taxa de entrega</span>
